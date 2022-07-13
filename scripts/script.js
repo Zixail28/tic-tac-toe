@@ -6,10 +6,11 @@ const btn = document.querySelector('.btn');
 const modelW = document.querySelector('.model-wrapper');
 const modelT = document.querySelector('.model-title');
 const scoreGame = document.querySelector('.score');
-
+const btnBot = document.querySelector('.btn-bot');
 
 let step = 0;
 let winner = '';
+let botMode = localStorage.getItem('botMode') == 'true' ? true : false;
 const colorX = 'rgba(255,255,255,0.2)';
 const colorW = 'rgba(255,255,255,0.2)';
 
@@ -26,24 +27,54 @@ const arr = [
 	[0,4,8],
 ];
 
-
 for(i = 0; i < 9; i++){
 	area.innerHTML += `<div class="box" pos="${i}"></div>`
 }
 
+const boxes = document.querySelectorAll('.box');
+
+	if(!botMode){
+		btnBot.textContent = 'Play with BOT';
+	} else{ btnBot.classList.toggle('active'); btnBot.textContent = 'Play with FRIEND' }
+
+
 area.addEventListener('click', e => {
 	if(e.target.className == 'box'){
-		if(e.target.innerHTML == ''){
-		e.target.innerHTML = step % 2 == 0 ? 'X' : 'O';
-		e.target.style.color = step % 2 == 0 ? 'red' : 'white';
-		step++;
-		checkGame();
+		if(!botMode){
+			if(e.target.innerHTML == ''){
+				e.target.innerHTML = step % 2 == 0 ? 'X' : 'O';
+				e.target.style.color = step % 2 == 0 ? 'red' : 'white';
+				step++;
+				checkGame();
+				}
+		} else{
+			if(e.target.innerHTML == ''){
+				e.target.innerHTML = step % 2 == 0 ? 'X' : 'O';
+				e.target.style.color = step % 2 == 0 ? 'red' : 'white';
+				step++;
+				checkGame();
+				if(step != 9) setTimeout(botStep, 100);
+				}
 		}
 	}
 })
 
+function botStep() {
+	let temp = getRandom(0,9);
+	console.log(boxes[temp], temp)
+	if(boxes[temp].textContent == ''){
+		boxes[temp].innerHTML = step % 2 == 0 ? 'X' : 'O';
+		boxes[temp].style.color = step % 2 == 0 ? 'red' : 'white';
+		step++;
+		checkGame();
+	} else { botStep() }
+}
+
+function getRandom(min, max) {
+  return Math.floor(Math.random() * (max - min) + min);
+}
+
 const checkGame = () => {
-	const boxes = document.querySelectorAll('.box');
 	if(step == 9){		
 		winner = 'Draw!'
 		modelW.style.display = 'block';
@@ -75,4 +106,19 @@ const finish = (winner) => {
 btn.addEventListener('click', () => {
 	localStorage.setItem('score', (+localStorage.getItem('score') + 1));
 	location.reload();
+})
+
+btnBot.addEventListener('click', () => {
+	btnBot.classList.toggle('active');
+	if(botMode){
+		btnBot.textContent = 'Play with BOT';
+		localStorage.setItem('botMode', false);
+	} else{ btnBot.textContent = 'Play with FRIEND'; 
+	localStorage.setItem('botMode', true); }
+	botMode = !botMode;
+	console.log(botMode);
+	step = 0;
+	boxes.forEach((e) => {
+		e.textContent = '';
+	})
 })
